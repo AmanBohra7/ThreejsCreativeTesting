@@ -1,23 +1,14 @@
-import logo from './logo.svg';
+// import {RotationVideoPanel} from './Components/RotatingVideoPanel.js';
+import RotationVideoPanel from './Components/RotatingVideoPanel';
+// import MaterialPractice from './Components/MaterialPractice';
+import ShadowMaskTest from './Components/ShadowMaskTest';
 import './App.css';
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+        <canvas id="bg"></canvas>
+        <ShadowMaskTest/>
     </div>
   );
 }
