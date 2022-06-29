@@ -61,14 +61,14 @@ const RiverShader = () => {
         const gui = new dat.GUI();
         gui.width = 400;
 
-        camera.position.set(2, 2, 1);
+        camera.position.set(6.7, 2.7, 3.2);
         let _x = 0
         let _y = 0
         let _z = 0
         camera.rotation.setFromVector3(new THREE.Vector3(_x, _y, _z));
 
         params.waveDepthColor = '#0000ff';
-        params.waveSurfaceColor = '#8888ff';
+        params.waveSurfaceColor = '#535656';
 
         //#region Shader practive
         const newplane = new THREE.PlaneBufferGeometry(2, 2, 128, 128);
@@ -76,6 +76,8 @@ const RiverShader = () => {
             uniforms: {
                 uTime: { value: 0.1 },
                 uThres: { value: 0.1 },
+                uTransformColor: {value: new THREE.Color(0xff0000)},
+                uActualColor: {value: new THREE.Color(0x535656)},
             },
             vertexShader:
                 `
@@ -89,12 +91,19 @@ const RiverShader = () => {
             fragmentShader: `
                 uniform float uTime;
                 uniform float uThres;
+                uniform vec3 uTransformColor;
+                uniform vec3 uActualColor;
                 varying vec3 vPos;
                 void main() {
                     if(vPos.x < uTime && vPos.x >  (uTime - uThres)){
-                        gl_FragColor = vec4(1,1,1, 1);
+                        gl_FragColor = vec4(1,1,1,1);
                     }else{
-                        gl_FragColor = vec4(0.2,0.2,0.2, 1);
+                        if(vPos.x <  (uTime - uThres)){
+                            gl_FragColor = vec4(uTransformColor, 1);
+                        }else{
+                            gl_FragColor = vec4(uActualColor, 1);
+                            
+                        }
                     }
                 }`
 
@@ -235,6 +244,9 @@ const RiverShader = () => {
         console.log(newplaneMesh);
         // console.log(newplane)
 
+
+
+
         const loader = new GLTFLoader();
 
         loader.load(car, function (gltf) {
@@ -246,15 +258,15 @@ const RiverShader = () => {
             gltf.scene.children[0].children.forEach(mesh => {
                 console.log(mesh.name);
                 mesh.material = newplaneMat;
-                setTimeout(() => {
-                    const hehe = setInterval(() => {
-                        newplaneMat.uniforms.uTime.value += 0.1;
-                        if (newplaneMat.uniforms.uTime.value > 5) {
-                            clearInterval(hehe);
-                            console.log("hehe cleared!s");
-                        }
-                    }, 100);
-                }, 1000);
+                // setTimeout(() => {
+                //     const hehe = setInterval(() => {
+                //         newplaneMat.uniforms.uTime.value += 0.1;
+                //         if (newplaneMat.uniforms.uTime.value > 5) {
+                //             clearInterval(hehe);
+                //             console.log("hehe cleared!s");
+                //         }
+                //     }, 100);
+                // }, 1000);
             })
 
         }, undefined, function (error) {
@@ -265,16 +277,30 @@ const RiverShader = () => {
 
         window.parent.shaderIt = () => {
             newplaneMat.uniforms.uTime.value = 0.0;
-            newplaneMat.uniforms.uThres.value = 0.1;
+            newplaneMat.uniforms.uThres.value = 0.05;
+            // newplaneMat.uniforms.uToSwitch = true;
             const hehe = setInterval(() => {
                 newplaneMat.uniforms.uTime.value += newplaneMat.uniforms.uThres.value;
                 if (newplaneMat.uniforms.uTime.value > 6) {
                     clearInterval(hehe);
+                    newplaneMat.uniforms.uActualColor.value = newplaneMat.uniforms.uTransformColor.value.clone();
+                    newplaneMat.uniforms.uTime.value = 0.0;
                     console.log("hehe cleared!s");
                 }
-            }, 50);
+            }, 20);
         }
 
+        params.uTransformColor = '#ff0000';
+
+         gui.addColor(params, "uTransformColor")
+            .name("Color")
+            .onChange(() => {
+                newplaneMat.uniforms.uTransformColor.value.set(params.uTransformColor);
+            });
+
+        window.parent.getCameraPose = () => {
+            console.log(camera.position);
+        }
 
         // adding to gui
         // gui.add(newplaneMat.uniforms.uWaveSpeed, 'value').min(0).max(4).step(0.1).name("Wave Speed");
